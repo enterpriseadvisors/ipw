@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Indywidualny Plan Wdrozenia</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #1a73e8;
+      --primary-dark: #1557b0;
+      --primary-light: #e8f0fe;
+      --bg: #f0f4f8;
+      --card: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --border: #e2e8f0;
+      --success: #10b981;
+      --success-bg: #ecfdf5;
+      --error: #ef4444;
+      --error-bg: #fef2f2;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    .container { max-width: 640px; margin: 0 auto; padding: 16px; }
+
+    .header { text-align: center; padding: 32px 16px 24px; }
+
+    .header-icon {
+      width: 56px; height: 56px; background: var(--primary); border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+
+    .header-icon svg { width: 28px; height: 28px; fill: #fff; }
+
+    .header h1 { font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+    .header p { font-size: 0.9rem; color: var(--text-light); max-width: 400px; margin: 0 auto; }
+
+    .param-info {
+      margin-top: 10px; font-size: 0.85rem; color: var(--primary);
+      font-weight: 600; background: var(--primary-light); padding: 6px 14px;
+      border-radius: 8px; display: inline-block;
+    }
+
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+    }
+
+    .card-title {
+      font-size: 1rem; font-weight: 600; color: var(--text);
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+
+    .card-title .badge {
+      font-size: 0.7rem; font-weight: 500; padding: 2px 8px;
+      border-radius: 20px; background: var(--primary-light); color: var(--primary);
+    }
+
+    .card-title .badge.optional { background: #f1f5f9; color: var(--text-light); }
+
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    label .hint { font-weight: 400; color: var(--text-light); font-size: 0.8rem; }
+
+    input[type="text"], input[type="date"], textarea {
+      width: 100%; padding: 12px 14px; font-size: 1rem; font-family: inherit;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: #fff; color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+
+    input:focus, textarea:focus {
+      outline: none; border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+    }
+
+    textarea { min-height: 100px; resize: vertical; }
+
+    .action-item { border-left: 4px solid var(--primary); }
+    .action-item.optional-item { border-left-color: var(--border); }
+
+    .action-number {
+      width: 28px; height: 28px; background: var(--primary); color: #fff;
+      border-radius: 50%; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 0.85rem; font-weight: 600; flex-shrink: 0;
+    }
+
+    .optional-item .action-number { background: var(--text-light); }
+
+    .add-action-btn {
+      width: 100%; padding: 14px; background: var(--card);
+      border: 2px dashed var(--border); border-radius: var(--radius);
+      color: var(--primary); font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, border-color 0.2s;
+      margin-bottom: 16px; font-family: inherit;
+    }
+
+    .add-action-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+    .add-action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .hidden { display: none !important; }
+
+    .submit-btn {
+      width: 100%; padding: 16px 24px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius); font-size: 1.05rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s, transform 0.1s; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .submit-btn:hover { background: var(--primary-dark); }
+    .submit-btn:active { transform: scale(0.98); }
+    .submit-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .message {
+      padding: 16px 20px; border-radius: var(--radius);
+      margin-bottom: 16px; font-size: 0.95rem; display: none;
+    }
+
+    .message.show { display: flex; align-items: flex-start; gap: 12px; }
+
+    .message.error { background: var(--error-bg); color: #991b1b; border: 1px solid #fecaca; }
+
+    .message-icon { font-size: 1.3rem; flex-shrink: 0; line-height: 1.3; }
+
+    .success-screen { text-align: center; padding: 60px 20px; }
+
+    .success-checkmark {
+      width: 80px; height: 80px; background: var(--success); border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 24px; animation: scaleIn 0.4s ease-out;
+    }
+
+    .success-checkmark svg { width: 40px; height: 40px; fill: #fff; }
+
+    @keyframes scaleIn {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .success-screen h2 { font-size: 1.4rem; margin-bottom: 8px; }
+    .success-screen p { color: var(--text-light); font-size: 0.95rem; }
+
+    .new-form-btn {
+      margin-top: 24px; padding: 12px 24px;
+      background: var(--primary-light); color: var(--primary);
+      border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.2s;
+    }
+
+    .new-form-btn:hover { background: #d2e3fc; }
+
+    .remove-action-btn {
+      background: none; border: none; color: var(--text-light);
+      font-size: 0.8rem; cursor: pointer; padding: 4px 8px;
+      border-radius: 4px; transition: color 0.2s, background 0.2s;
+      margin-left: auto; font-family: inherit;
+    }
+
+    .remove-action-btn:hover { color: var(--error); background: var(--error-bg); }
+
+    .card-title-row { display: flex; align-items: center; width: 100%; }
+
+    @media (max-width: 480px) {
+      .container { padding: 12px; }
+      .header { padding: 24px 12px 20px; }
+      .header h1 { font-size: 1.3rem; }
+      .card { padding: 16px; }
+      textarea { min-height: 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="form-view" class="container">
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2-6h8v2H8v-2zm0-3h8v2H8v-2z"/></svg>
+    </div>
+    <h1>Indywidualny Plan Wdro&#380;enia</h1>
+    <p>Wype&#322;nij sw&#243;j plan wdro&#380;enia wiedzy i umiej&#281;tno&#347;ci po szkoleniu. Opisz co i jak chcesz zastosowa&#263; w swojej pracy.</p>
+    <div id="param-info" class="param-info hidden"></div>
+  </div>
+
+  <div id="error-msg" class="message error">
+    <span class="message-icon">&#10060;</span>
+    <span id="error-text">Wyst&#261;pi&#322; b&#322;&#261;d.</span>
+  </div>
+
+  <form id="ipw-form" onsubmit="handleSubmit(event)">
+
+    <div class="card">
+      <div class="card-title">Dane uczestnika</div>
+      <div class="field">
+        <label for="name">Imi&#281; i nazwisko</label>
+        <input type="text" id="name" name="name" required placeholder="np. Jan Kowalski" autocomplete="name">
+      </div>
+      <div class="field">
+        <label for="training">Tytu&#322; szkolenia</label>
+        <input type="text" id="training" name="training" required placeholder="np. Zarz&#261;dzanie zespo&#322;em">
+      </div>
+    </div>
+
+    <div class="card action-item" id="action-1">
+      <div class="card-title">
+        <div class="card-title-row">
+          <span class="action-number">1</span>
+          <span style="margin-left:4px">Dzia&#322;anie do wdro&#380;enia</span>
+          <span class="badge">wymagane</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="tool-1">Narz&#281;dzie lub metoda</label>
+        <input type="text" id="tool-1" required placeholder="Co chcesz zastosowa&#263;?">
+      </div>
+      <div class="field">
+        <label for="desc-1">Jak chcesz to wdro&#380;y&#263;? <span class="hint">(podaj przyk&#322;ady)</span></label>
+        <textarea id="desc-1" required placeholder="Opisz konkretne dzia&#322;ania, kt&#243;re podejmiesz..."></textarea>
+      </div>
+      <div class="field">
+        <label for="deadline-1">Do kiedy wdro&#380;ysz?</label>
+        <input type="date" id="deadline-1" required>
+      </div>
+      <div class="field">
+        <label for="support-1">Jakiego wsparcia potrzebujesz? <span class="hint">(od prze&#322;o&#380;onego, firmy, trenera)</span></label>
+        <textarea id="support-1" placeholder="Opisz potrzebne wsparcie..." style="min-height:60px"></textarea>
+      </div>
+    </div>
+
+    <div class="card action-item optional-item hidden" id="action-2">
+      <div class="card-title"><div class="card-title-row">
+        <span class="action-number">2</span>
+        <span style="margin-left:4px">Dzia&#322;anie do wdro&#380;enia</span>
+        <span class="badge optional">opcjonalne</span>
+        <button type="button" class="remove-action-btn" onclick="removeAction(2)">usu&#324;</button>
+      </div></div>
+      <div class="field"><label for="tool-2">Narz&#281;dzie lub metoda</label><input type="text" id="tool-2" placeholder="Co chcesz zastosowa&#263;?"></div>
+      <div class="field"><label for="desc-2">Jak chcesz to wdro&#380;y&#263;?</label><textarea id="desc-2" placeholder="Opisz konkretne dzia&#322;ania..."></textarea></div>
+      <div class="field"><label for="deadline-2">Do kiedy wdro&#380;ysz?</label><input type="date" id="deadline-2"></div>
+      <div class="field"><label for="support-2">Jakiego wsparcia potrzebujesz?</label><textarea id="support-2" placeholder="Opisz potrzebne wsparcie..." style="min-height:60px"></textarea></div>
+    </div>
+
+    <div class="card action-item optional-item hidden" id="action-3">
+      <div class="card-title"><div class="card-title-row">
+        <span class="action-number">3</span>
+        <span style="margin-left:4px">Dzia&#322;anie do wdro&#380;enia</span>
+        <span class="badge optional">opcjonalne</span>
+        <button type="button" class="remove-action-btn" onclick="removeAction(3)">usu&#324;</button>
+      </div></div>
+      <div class="field"><label for="tool-3">Narz&#281;dzie lub metoda</label><input type="text" id="tool-3" placeholder="Co chcesz zastosowa&#263;?"></div>
+      <div class="field"><label for="desc-3">Jak chcesz to wdro&#380;y&#263;?</label><textarea id="desc-3" placeholder="Opisz konkretne dzia&#322;ania..."></textarea></div>
+      <div class="field"><label for="deadline-3">Do kiedy wdro&#380;ysz?</label><input type="date" id="deadline-3"></div>
+      <div class="field"><label for="support-3">Jakiego wsparcia potrzebujesz?</label><textarea id="support-3" placeholder="Opisz potrzebne wsparcie..." style="min-height:60px"></textarea></div>
+    </div>
+
+    <div class="card action-item optional-item hidden" id="action-4">
+      <div class="card-title"><div class="card-title-row">
+        <span class="action-number">4</span>
+        <span style="margin-left:4px">Dzia&#322;anie do wdro&#380;enia</span>
+        <span class="badge optional">opcjonalne</span>
+        <button type="button" class="remove-action-btn" onclick="removeAction(4)">usu&#324;</button>
+      </div></div>
+      <div class="field"><label for="tool-4">Narz&#281;dzie lub metoda</label><input type="text" id="tool-4" placeholder="Co chcesz zastosowa&#263;?"></div>
+      <div class="field"><label for="desc-4">Jak chcesz to wdro&#380;y&#263;?</label><textarea id="desc-4" placeholder="Opisz konkretne dzia&#322;ania..."></textarea></div>
+      <div class="field"><label for="deadline-4">Do kiedy wdro&#380;ysz?</label><input type="date" id="deadline-4"></div>
+      <div class="field"><label for="support-4">Jakiego wsparcia potrzebujesz?</label><textarea id="support-4" placeholder="Opisz potrzebne wsparcie..." style="min-height:60px"></textarea></div>
+    </div>
+
+    <button type="button" class="add-action-btn" id="add-btn" onclick="addAction()">+ Dodaj kolejne dzia&#322;anie</button>
+
+    <button type="submit" class="submit-btn" id="submit-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      Wy&#347;lij plan
+    </button>
+  </form>
+</div>
+
+<div id="success-view" class="container hidden">
+  <div class="success-screen">
+    <div class="success-checkmark">
+      <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+    </div>
+    <h2>Plan wys&#322;any!</h2>
+    <p>Tw&#243;j Indywidualny Plan Wdro&#380;enia zosta&#322; zapisany. Dzi&#281;kujemy za wype&#322;nienie.</p>
+    <button class="new-form-btn" onclick="resetForm()">Wype&#322;nij kolejny plan</button>
+  </div>
+</div>
+
+<script>
+  // ================================================
+  // WAZNE: Wklej ponizej swoj URL z Apps Script
+  // ================================================
+  var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzQ7SPfckgrOv78uUSIduyjg8tkIERGWf2A4KDu7KZkDPD8gYfKLPnTZOEMsaBMJrhvQ/exec';
+
+  var urlParams = new URLSearchParams(window.location.search);
+  var paramTrener = urlParams.get('trener') || '';
+  var paramSzkolenie = urlParams.get('szkolenie') || '';
+  var paramProjekt = urlParams.get('projekt') || '';
+
+  var visibleActions = 1;
+  var maxActions = 4;
+
+  function addAction() {
+    if (visibleActions >= maxActions) return;
+    visibleActions++;
+    document.getElementById('action-' + visibleActions).classList.remove('hidden');
+    if (visibleActions >= maxActions) document.getElementById('add-btn').disabled = true;
+    document.getElementById('action-' + visibleActions).scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function removeAction(num) {
+    var card = document.getElementById('action-' + num);
+    card.classList.add('hidden');
+    card.querySelectorAll('input, textarea').forEach(function(el) { el.value = ''; });
+    reorderActions();
+  }
+
+  function reorderActions() {
+    var visible = [];
+    for (var i = 2; i <= maxActions; i++) {
+      if (!document.getElementById('action-' + i).classList.contains('hidden')) visible.push(i);
+    }
+    visibleActions = 1 + visible.length;
+    document.getElementById('add-btn').disabled = (visibleActions >= maxActions);
+  }
+
+  function collectFormData() {
+    var data = {
+      name: document.getElementById('name').value.trim(),
+      training: document.getElementById('training').value.trim(),
+      trener: paramTrener,
+      projekt: paramProjekt,
+      actions: []
+    };
+    for (var i = 1; i <= maxActions; i++) {
+      var card = document.getElementById('action-' + i);
+      if (card.classList.contains('hidden')) continue;
+      var tool = document.getElementById('tool-' + i).value.trim();
+      var desc = document.getElementById('desc-' + i).value.trim();
+      var deadline = document.getElementById('deadline-' + i).value;
+      var support = document.getElementById('support-' + i).value.trim();
+      if (tool || desc) {
+        data.actions.push({ tool: tool, description: desc, deadline: deadline, support: support });
+      }
+    }
+    return data;
+  }
+
+  function showError(msg) {
+    var el = document.getElementById('error-msg');
+    document.getElementById('error-text').textContent = msg;
+    el.classList.add('show');
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideError() { document.getElementById('error-msg').classList.remove('show'); }
+
+  function setLoading(loading) {
+    var btn = document.getElementById('submit-btn');
+    if (loading) {
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Wysy\u0142anie...';
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Wy\u015Blij plan';
+    }
+  }
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    hideError();
+    var data = collectFormData();
+    if (data.actions.length === 0) {
+      showError('Wype\u0142nij przynajmniej jedno dzia\u0142anie do wdro\u017Cenia.');
+      return;
+    }
+    setLoading(true);
+
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(data)
+    })
+    .then(function() {
+      setLoading(false);
+      document.getElementById('form-view').classList.add('hidden');
+      document.getElementById('success-view').classList.remove('hidden');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(function(err) {
+      setLoading(false);
+      showError('Nie uda\u0142o si\u0119 wys\u0142a\u0107 planu. Sprawd\u017A po\u0142\u0105czenie internetowe i spr\u00F3buj ponownie.');
+    });
+  }
+
+  function resetForm() {
+    document.getElementById('ipw-form').reset();
+    for (var i = 2; i <= maxActions; i++) {
+      document.getElementById('action-' + i).classList.add('hidden');
+    }
+    visibleActions = 1;
+    document.getElementById('add-btn').disabled = false;
+    document.getElementById('success-view').classList.add('hidden');
+    document.getElementById('form-view').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (paramSzkolenie) {
+      document.getElementById('training').value = paramSzkolenie;
+    }
+    var twoWeeks = new Date();
+    twoWeeks.setDate(twoWeeks.getDate() + 14);
+    document.getElementById('deadline-1').value = twoWeeks.toISOString().split('T')[0];
+  }
+
+  (function() {
+    var twoWeeks = new Date();
+    twoWeeks.setDate(twoWeeks.getDate() + 14);
+    document.getElementById('deadline-1').value = twoWeeks.toISOString().split('T')[0];
+
+    if (paramSzkolenie) {
+      var trainingField = document.getElementById('training');
+      trainingField.value = paramSzkolenie;
+      trainingField.readOnly = true;
+      trainingField.style.backgroundColor = '#f1f5f9';
+      trainingField.style.cursor = 'default';
+    }
+
+    if (paramSzkolenie || paramTrener) {
+      var parts = [];
+      if (paramSzkolenie) parts.push(paramSzkolenie);
+      if (paramTrener) parts.push('Trener: ' + paramTrener);
+      var infoEl = document.getElementById('param-info');
+      infoEl.textContent = parts.join(' \u2022 ');
+      infoEl.classList.remove('hidden');
+    }
+  })();
+</script>
+
+</body>
+</html>
