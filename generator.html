@@ -144,6 +144,225 @@
     <div class="field">
       <label for="trener">Trener <span class="hint">(Twoje imi&#281; i nazwisko)</span></label>
       <input type="text" id="trener" placeholder="np. Jan Kowalski" list="trenerzy">
+    </div>
+    <div class="field">
+      <label for="email">Tw&#243;j email <span class="hint">(tu dostaniesz powiadomienia)</span></label>
+      <input type="text" id="email" placeholder="np. jan.kowalski@enterpriseadvisors.pl">
+      <datalist id="trenerzy">
+        <!-- LISTA TRENEROW: dodaj opcje ponizej -->
+        <!-- <option value="Jan Kowalski"> -->
+        <!-- <option value="Anna Nowak"> -->
+      </datalist>
+    </div>
+    <div class="field">
+      <label for="szkolenie">Tytu&#322; szkolenia</label>
+      <input type="text" id="szkolenie" placeholder="np. Zarz&#261;dzanie zespo&#322;em">
+    </div>
+    <div class="field">
+      <label for="projekt">Projekt / klient <span class="hint">(opcjonalne)</span></label>
+      <input type="text" id="projekt" placeholder="np. Firma ABC">
+    </div>
+    <button class="generate-btn" onclick="generateLink()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+      Generuj link i QR
+    </button>
+  </div>
+
+  <div id="result" class="card hidden">
+    <div class="card-title">Gotowy link do formularza</div>
+    <div class="link-box">
+      <input type="text" id="generated-link" readonly>
+      <button class="copy-btn" id="copy-btn" onclick="copyLink()">Kopiuj</button>
+    </div>
+    <div class="qr-container" id="qrcode"></div>
+    <p class="qr-hint">Poka&#380; ten kod QR uczestnikom na sali szkoleniowej<br>lub wklej go do prezentacji.</p>
+    <div style="text-align:center">
+      <button class="download-btn" onclick="downloadQR()">Pobierz QR jako obraz</button>
+    </div>
+  </div>
+
+  <a href="index.html" class="back-link">&#8592; Formularz IPW</a>
+</div>
+
+<script>
+  var BASE_URL = 'https://enterpriseadvisors.github.io/ipw/';
+
+  function generateLink() {
+    var trener = document.getElementById('trener').value.trim();
+    var szkolenie = document.getElementById('szkolenie').value.trim();
+    var projekt = document.getElementById('projekt').value.trim();
+
+    var email = document.getElementById('email').value.trim();
+
+    if (!trener || !szkolenie || !email) {
+      alert('Wpisz imie trenera, email i tytul szkolenia.');
+      return;
+    }
+
+    var params = new URLSearchParams();
+    params.set('trener', trener);
+    params.set('email', email);
+    params.set('szkolenie', szkolenie);
+    if (projekt) params.set('projekt', projekt);
+
+    var url = BASE_URL + '?' + params.toString();
+    document.getElementById('generated-link').value = url;
+    document.getElementById('result').classList.remove('hidden');
+
+    var copyBtn = document.getElementById('copy-btn');
+    copyBtn.textContent = 'Kopiuj';
+    copyBtn.classList.remove('copied');
+
+    var qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = '';
+    new QRCode(qrDiv, {
+      text: url,
+      width: 280,
+      height: 280,
+      colorDark: '#1a73e8',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function copyLink() {
+    var link = document.getElementById('generated-link').value;
+    navigator.clipboard.writeText(link).then(function() {
+      var btn = document.getElementById('copy-btn');
+      btn.textContent = 'Skopiowano!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Kopiuj';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  function downloadQR() {
+    var canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) return;
+    var a = document.createElement('a');
+    var szkolenie = document.getElementById('szkolenie').value.trim().replace(/\s+/g, '_');
+    a.download = 'IPW_QR_' + szkolenie + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+</script>
+
+</body>
+</html>
+    .header-icon {
+      width: 56px; height: 56px; background: var(--primary); border-radius: 16px;
+      display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;
+    }
+
+    .header-icon svg { width: 28px; height: 28px; fill: #fff; }
+    .header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+    .header p { font-size: 0.9rem; color: var(--text-light); max-width: 420px; margin: 0 auto; }
+
+    .card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 20px; margin-bottom: 16px;
+    }
+
+    .card-title { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; }
+    label .hint { font-weight: 400; color: var(--text-light); font-size: 0.8rem; }
+
+    input[type="text"] {
+      width: 100%; padding: 12px 14px; font-size: 1rem; font-family: inherit;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: #fff; color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+
+    input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+
+    .generate-btn {
+      width: 100%; padding: 16px 24px; margin-top: 8px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius); font-size: 1.05rem; font-weight: 600;
+      cursor: pointer; transition: background 0.2s; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+
+    .generate-btn:hover { background: var(--primary-dark); }
+
+    .hidden { display: none !important; }
+
+    .link-box { display: flex; gap: 8px; margin-bottom: 4px; }
+
+    .link-box input {
+      flex: 1; padding: 10px 12px; font-size: 0.8rem;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      background: var(--primary-light); color: var(--text); font-family: monospace;
+    }
+
+    .copy-btn {
+      padding: 10px 16px; background: var(--primary); color: #fff;
+      border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+      font-family: inherit; font-size: 0.85rem; white-space: nowrap;
+      transition: background 0.2s; min-width: 100px;
+    }
+
+    .copy-btn:hover { background: var(--primary-dark); }
+    .copy-btn.copied { background: var(--success); }
+
+    .qr-container { text-align: center; margin: 24px 0 8px; }
+    .qr-container canvas { border-radius: 8px; }
+
+    .qr-hint {
+      font-size: 0.85rem; color: var(--text-light); text-align: center;
+      margin-top: 12px; line-height: 1.4;
+    }
+
+    .download-btn {
+      display: inline-block; margin-top: 12px; padding: 8px 16px;
+      background: var(--primary-light); color: var(--primary);
+      border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.2s;
+    }
+
+    .download-btn:hover { background: #d2e3fc; }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 16px;
+      font-size: 0.85rem; color: var(--text-light); text-decoration: none;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    @media (max-width: 480px) {
+      .container { padding: 12px; }
+      .header { padding: 24px 12px 20px; }
+      .header h1 { font-size: 1.3rem; }
+      .card { padding: 16px; }
+      .link-box { flex-direction: column; }
+      .copy-btn { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+    </div>
+    <h1>Generator link&#243;w IPW</h1>
+    <p>Wygeneruj link i kod QR do formularza Indywidualnego Planu Wdro&#380;enia dla swoich uczestnik&#243;w.</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label for="trener">Trener <span class="hint">(Twoje imi&#281; i nazwisko)</span></label>
+      <input type="text" id="trener" placeholder="np. Jan Kowalski" list="trenerzy">
       <datalist id="trenerzy">
         <!-- LISTA TRENEROW: dodaj opcje ponizej -->
         <!-- <option value="Jan Kowalski"> -->
