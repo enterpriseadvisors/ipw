@@ -340,8 +340,8 @@
       correctLevel: QRCode.CorrectLevel.M
     });
 
-    // Raport link — tylko token
-    document.getElementById('raport-link').href = BASE_URL + 'raport.html?token=' + token;
+    // Raport link — bezposrednio Apps Script (unika CORS)
+    document.getElementById('raport-link').href = 'https://script.google.com/macros/s/AKfycbxzQ7SPfckgrOv78uUSIduyjg8tkIERGWf2A4KDu7KZkDPD8gYfKLPnTZOEMsaBMJrhvQ/exec?action=raport&token=' + token;
 
     document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
