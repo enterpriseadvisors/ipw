@@ -355,6 +355,10 @@
         <input type="text" id="name" name="name" required placeholder="np. Jan Kowalski" autocomplete="name">
       </div>
       <div class="field">
+        <label for="company">Firma / organizacja</label>
+        <input type="text" id="company" name="company" required placeholder="np. ABC Sp. z o.o.">
+      </div>
+      <div class="field">
         <label for="training">Tytu&#322; szkolenia</label>
         <input type="text" id="training" name="training" required placeholder="np. Zarz&#261;dzanie zespo&#322;em">
       </div>
@@ -442,16 +446,19 @@
   var paramEmail = urlParams.get('email') || '';
   var paramSzkolenie = urlParams.get('szkolenie') || '';
   var paramProjekt = urlParams.get('projekt') || '';
+  var paramToken = urlParams.get('token') || '';
 
   var maxActions = 3;
 
   function collectFormData() {
     var data = {
       name: document.getElementById('name').value.trim(),
+      company: document.getElementById('company').value.trim(),
       training: document.getElementById('training').value.trim(),
       trener: paramTrener,
       trenerEmail: paramEmail,
       projekt: paramProjekt,
+      token: paramToken,
       actions: []
     };
     for (var i = 1; i <= maxActions; i++) {
