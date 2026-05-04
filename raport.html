@@ -110,26 +110,25 @@
   } else {
     document.getElementById('param-info').textContent = '\u0141adowanie...';
 
-    var fetchParams = new URLSearchParams();
-    fetchParams.set('action', 'raport');
-    fetchParams.set('token', paramToken);
+    // JSONP — obejscie CORS dla Google Apps Script
+    window.handleRaportData = function(data) {
+      if (data.status === 'ok') {
+        var parts = [];
+        if (data.szkolenie) parts.push(data.szkolenie);
+        if (data.trener) parts.push('Trener: ' + data.trener);
+        document.getElementById('param-info').textContent = parts.join(' \u2022 ') || 'Raport';
+        renderReport(data);
+      } else {
+        showError(data.message || 'B\u0142\u0105d pobierania danych.');
+      }
+    };
 
-    fetch(APPS_SCRIPT_URL + '?' + fetchParams.toString())
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (data.status === 'ok') {
-          var parts = [];
-          if (data.szkolenie) parts.push(data.szkolenie);
-          if (data.trener) parts.push('Trener: ' + data.trener);
-          document.getElementById('param-info').textContent = parts.join(' \u2022 ') || 'Raport';
-          renderReport(data);
-        } else {
-          showError(data.message || 'B\u0142\u0105d pobierania danych.');
-        }
-      })
-      .catch(function(err) {
+    var script = document.createElement('script');
+    script.src = APPS_SCRIPT_URL + '?action=raport&token=' + encodeURIComponent(paramToken) + '&callback=handleRaportData';
+    script.onerror = function() {
       showError('Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem. Spr\u00F3buj ponownie.');
-    });
+    };
+    document.body.appendChild(script);
   }
 
   function renderReport(data) {
