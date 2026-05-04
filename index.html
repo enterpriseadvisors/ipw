@@ -186,7 +186,7 @@
 
     label .hint { font-weight: 300; color: var(--text-muted); font-size: 0.76rem; }
 
-    input[type="text"], input[type="date"], textarea {
+    input[type="text"], input[type="email"], input[type="date"], textarea {
       width: 100%; padding: 11px 14px;
       font-size: 0.95rem;
       font-family: 'Roboto', sans-serif;
@@ -359,6 +359,10 @@
         <input type="text" id="company" name="company" required placeholder="np. ABC Sp. z o.o.">
       </div>
       <div class="field">
+        <label for="participant-email">Adres e-mail</label>
+        <input type="email" id="participant-email" name="participant-email" required placeholder="np. jan.kowalski@firma.pl" autocomplete="email">
+      </div>
+      <div class="field">
         <label for="training">Tytu&#322; szkolenia</label>
         <input type="text" id="training" name="training" required placeholder="np. Zarz&#261;dzanie zespo&#322;em">
       </div>
@@ -454,6 +458,7 @@
     var data = {
       name: document.getElementById('name').value.trim(),
       company: document.getElementById('company').value.trim(),
+      participantEmail: document.getElementById('participant-email').value.trim(),
       training: document.getElementById('training').value.trim(),
       trener: paramTrener,
       trenerEmail: paramEmail,
