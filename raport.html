@@ -110,9 +110,9 @@
   } else {
     document.getElementById('param-info').textContent = '\u0141adowanie...';
 
-    // iframe + postMessage — obejscie CORS dla Google Apps Script
-    window.addEventListener('message', function(e) {
-      var data = e.data;
+    // JSONP — obejscie CORS dla Google Apps Script
+    window.handleRaportData = function(data) {
+      window._raportLoaded = true;
       if (data && data.status === 'ok') {
         var parts = [];
         if (data.szkolenie) parts.push(data.szkolenie);
@@ -121,17 +121,19 @@
         renderReport(data);
       } else if (data && data.status === 'error') {
         showError(data.message || 'B\u0142\u0105d pobierania danych.');
+      } else {
+        showError('Nieoczekiwana odpowied\u017A serwera.');
       }
-    });
+    };
 
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    iframe.src = APPS_SCRIPT_URL + '?action=raport-iframe&token=' + encodeURIComponent(paramToken);
-    document.body.appendChild(iframe);
+    var script = document.createElement('script');
+    script.src = APPS_SCRIPT_URL + '?action=raport-data&token=' + encodeURIComponent(paramToken) + '&callback=handleRaportData';
+    script.onerror = function() { showError('Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem.'); };
+    document.body.appendChild(script);
 
     // Timeout na wypadek braku odpowiedzi
     setTimeout(function() {
-      if (document.getElementById('param-info').textContent === '\u0141adowanie...') {
+      if (!window._raportLoaded) {
         showError('Nie uda\u0142o si\u0119 po\u0142\u0105czy\u0107 z serwerem. Spr\u00F3buj ponownie.');
       }
     }, 15000);
