@@ -590,6 +590,316 @@
     <div style="text-align:center">
       <button class="download-btn" onclick="downloadQR()">Pobierz QR jako obraz</button>
     </div>
+    <div style="margin-top:20px; padding-top:16px; border-top:1px solid #e5e7eb; text-align:center;">
+      <p style="font-size:0.82rem; color:#6b7280; margin-bottom:8px; font-weight:300;">Raport zbiorczy z odpowiedziami uczestnik&#243;w:</p>
+      <a id="raport-link" href="#" target="_blank" style="display:inline-block; padding:10px 20px; background:#eef0f2; color:#32373c; text-decoration:none; border-radius:6px; font-size:0.88rem; font-weight:500; transition:background 0.2s;">Otw&#243;rz raport zbiorczy</a>
+    </div>
+  </div>
+
+  <a href="index.html" class="back-link">&#8592; Formularz IPW</a>
+
+  <div class="footer">Enterprise Advisors &middot; Generator link&#243;w IPW</div>
+</div>
+
+<script>
+  var BASE_URL = 'https://enterpriseadvisors.github.io/ipw/';
+
+  function generateToken() {
+    var chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    var token = '';
+    for (var i = 0; i < 8; i++) token += chars.charAt(Math.floor(Math.random() * chars.length));
+    return token;
+  }
+
+  function generateLink() {
+    var trener = document.getElementById('trener').value.trim();
+    var szkolenie = document.getElementById('szkolenie').value.trim();
+    var projekt = document.getElementById('projekt').value.trim();
+    var email = document.getElementById('email').value.trim();
+
+    if (!trener || !szkolenie || !email) {
+      alert('Wpisz imi\u0119 trenera, email i tytu\u0142 szkolenia.');
+      return;
+    }
+
+    var token = generateToken();
+
+    var params = new URLSearchParams();
+    params.set('trener', trener);
+    params.set('email', email);
+    params.set('szkolenie', szkolenie);
+    params.set('token', token);
+    if (projekt) params.set('projekt', projekt);
+
+    var url = BASE_URL + '?' + params.toString();
+    document.getElementById('generated-link').value = url;
+    document.getElementById('result').classList.remove('hidden');
+
+    var copyBtn = document.getElementById('copy-btn');
+    copyBtn.textContent = 'Kopiuj';
+    copyBtn.classList.remove('copied');
+
+    var qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = '';
+    new QRCode(qrDiv, {
+      text: url,
+      width: 280,
+      height: 280,
+      colorDark: '#32373c',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // Raport link — tylko token
+    document.getElementById('raport-link').href = BASE_URL + 'raport.html?token=' + token;
+
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function copyLink() {
+    var link = document.getElementById('generated-link').value;
+    navigator.clipboard.writeText(link).then(function() {
+      var btn = document.getElementById('copy-btn');
+      btn.textContent = 'Skopiowano!';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = 'Kopiuj';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  function downloadQR() {
+    var canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) return;
+    var a = document.createElement('a');
+    var szkolenie = document.getElementById('szkolenie').value.trim().replace(/\s+/g, '_');
+    a.download = 'IPW_QR_' + szkolenie + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+</script>
+
+</body>
+</html>
+
+    .header-icon svg { width: 24px; height: 24px; fill: #fff; }
+
+    .header h1 {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      max-width: 420px;
+      margin: 0 auto;
+      font-weight: 300;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.2s;
+    }
+
+    .card:focus-within { box-shadow: var(--shadow-hover); }
+
+    .card-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .field { margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 5px;
+    }
+
+    label .hint { font-weight: 300; color: var(--text-muted); font-size: 0.76rem; }
+
+    input[type="text"] {
+      width: 100%; padding: 11px 14px;
+      font-size: 0.95rem;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 300;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(6, 147, 227, 0.1);
+    }
+
+    input::placeholder { color: var(--text-muted); font-weight: 300; }
+
+    .generate-btn {
+      width: 100%; padding: 16px 24px; margin-top: 8px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius);
+      font-size: 1rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+      font-family: 'Roboto', sans-serif;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(50,55,60,0.2);
+    }
+
+    .generate-btn:hover { background: var(--primary-hover); box-shadow: 0 6px 20px rgba(50,55,60,0.3); transform: translateY(-1px); }
+
+    .hidden { display: none !important; }
+
+    .link-box { display: flex; gap: 8px; margin-bottom: 4px; }
+
+    .link-box input {
+      flex: 1; padding: 10px 12px;
+      font-size: 0.78rem;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      background: #f9fafb;
+      color: var(--text);
+      font-family: monospace;
+    }
+
+    .copy-btn {
+      padding: 10px 16px;
+      background: var(--primary); color: #fff;
+      border: none; border-radius: 6px;
+      font-weight: 500; cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.82rem;
+      white-space: nowrap;
+      transition: background 0.2s;
+      min-width: 100px;
+    }
+
+    .copy-btn:hover { background: var(--primary-hover); }
+    .copy-btn.copied { background: var(--success); }
+
+    .qr-container { text-align: center; margin: 24px 0 8px; }
+    .qr-container canvas { border-radius: 8px; }
+
+    .qr-hint {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.5;
+      font-weight: 300;
+    }
+
+    .download-btn {
+      display: inline-block; margin-top: 12px;
+      padding: 8px 16px;
+      background: #eef0f2; color: var(--primary);
+      border: none; border-radius: 6px;
+      font-size: 0.82rem; font-weight: 500;
+      cursor: pointer; font-family: 'Roboto', sans-serif;
+      transition: background 0.2s;
+    }
+
+    .download-btn:hover { background: #dfe2e6; }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 16px;
+      font-size: 0.82rem; color: var(--text-muted); text-decoration: none;
+      font-weight: 300;
+    }
+
+    .back-link:hover { color: var(--primary); }
+
+    .footer {
+      text-align: center;
+      padding: 20px 16px 4px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      font-weight: 300;
+    }
+
+    @media (max-width: 480px) {
+      .container { padding: 12px; }
+      .header { padding: 24px 12px 16px; }
+      .header h1 { font-size: 1.3rem; }
+      .card { padding: 18px; }
+      .link-box { flex-direction: column; }
+      .copy-btn { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <img src="data:image/png;base64,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" alt="Enterprise Advisors">
+</div>
+
+<div class="container">
+  <div class="header">
+    <h1>Generator link&#243;w IPW</h1>
+    <p>Wygeneruj link i kod QR do formularza Indywidualnego Planu Wdro&#380;enia dla swoich uczestnik&#243;w.</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label for="trener">Trener <span class="hint">(Twoje imi&#281; i nazwisko)</span></label>
+      <input type="text" id="trener" placeholder="np. Jan Kowalski" list="trenerzy">
+    </div>
+    <div class="field">
+      <label for="email">Tw&#243;j email <span class="hint">(tu dostaniesz powiadomienia)</span></label>
+      <input type="text" id="email" placeholder="np. jan.kowalski@enterpriseadvisors.pl">
+      <datalist id="trenerzy">
+        <!-- LISTA TRENEROW: dodaj opcje ponizej -->
+      </datalist>
+    </div>
+    <div class="field">
+      <label for="szkolenie">Tytu&#322; szkolenia</label>
+      <input type="text" id="szkolenie" placeholder="np. Zarz&#261;dzanie zespo&#322;em">
+    </div>
+    <div class="field">
+      <label for="projekt">Projekt / klient <span class="hint">(opcjonalne)</span></label>
+      <input type="text" id="projekt" placeholder="np. Firma ABC">
+    </div>
+    <button class="generate-btn" onclick="generateLink()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>
+      Generuj link i QR
+    </button>
+  </div>
+
+  <div id="result" class="card hidden">
+    <div class="card-title">Gotowy link do formularza</div>
+    <div class="link-box">
+      <input type="text" id="generated-link" readonly>
+      <button class="copy-btn" id="copy-btn" onclick="copyLink()">Kopiuj</button>
+    </div>
+    <div class="qr-container" id="qrcode"></div>
+    <p class="qr-hint">Poka&#380; ten kod QR uczestnikom na sali szkoleniowej<br>lub wklej go do prezentacji.</p>
+    <div style="text-align:center">
+      <button class="download-btn" onclick="downloadQR()">Pobierz QR jako obraz</button>
+    </div>
   </div>
 
   <a href="index.html" class="back-link">&#8592; Formularz IPW</a>
