@@ -192,13 +192,13 @@
       html += '<span class="participant-name">' + esc(e.name) + '</span>';
       if (e.company) html += ' <span class="participant-company">&mdash; ' + esc(e.company) + '</span>';
       html += '</div>';
-      if (e.data) html += '<div class="participant-date">Wys\u0142ano: ' + esc(e.data) + '</div>';
+      if (e.data) html += '<div class="participant-date">Wys\u0142ano: ' + esc(formatDate(e.data)) + '</div>';
 
       if (e.actions.length > 0) {
         html += '<table class="action-table"><thead><tr><th>Nr</th><th>Narz\u0119dzie / metoda</th><th>Opis wdro\u017Cenia</th><th>Termin</th><th>Wsparcie</th></tr></thead><tbody>';
         for (var a = 0; a < e.actions.length; a++) {
           var act = e.actions[a];
-          html += '<tr><td>' + (a + 1) + '</td><td>' + esc(act.tool) + '</td><td>' + esc(act.description) + '</td><td>' + esc(act.deadline) + '</td><td>' + esc(act.support) + '</td></tr>';
+          html += '<tr><td>' + (a + 1) + '</td><td>' + esc(act.tool) + '</td><td>' + esc(act.description) + '</td><td>' + esc(formatDate(act.deadline)) + '</td><td>' + esc(act.support) + '</td></tr>';
         }
         html += '</tbody></table>';
       } else {
@@ -221,6 +221,16 @@
     return d.innerHTML;
   }
 
+  function formatDate(s) {
+    if (!s) return '';
+    var d = new Date(s);
+    if (isNaN(d.getTime())) return s;
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var yyyy = d.getFullYear();
+    return dd + '.' + mm + '.' + yyyy;
+  }
+
   function exportExcel() {
     if (!_raportData || !_raportData.entries) return;
     var d = _raportData;
@@ -240,10 +250,10 @@
 
     for (var i = 0; i < d.entries.length; i++) {
       var e = d.entries[i];
-      var row = [i + 1, e.name, e.company || '', e.data || ''];
+      var row = [i + 1, e.name, e.company || '', formatDate(e.data)];
       for (var a = 0; a < 3; a++) {
         var act = e.actions[a] || {};
-        row.push(act.tool || '', act.description || '', act.deadline || '', act.support || '');
+        row.push(act.tool || '', act.description || '', formatDate(act.deadline), act.support || '');
       }
       rows.push(row);
     }
@@ -299,7 +309,7 @@
         var tableRows = [];
         for (var a = 0; a < e.actions.length; a++) {
           var act = e.actions[a];
-          tableRows.push([String(a + 1), act.tool || '-', act.description || '-', act.deadline || '-', act.support || '-']);
+          tableRows.push([String(a + 1), act.tool || '-', act.description || '-', formatDate(act.deadline) || '-', act.support || '-']);
         }
 
         doc.autoTable({
