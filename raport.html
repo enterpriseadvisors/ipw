@@ -51,9 +51,16 @@
       .action-table th, .action-table td { padding: 6px 8px; }
       .stats { flex-direction: column; }
     }
+    .export-buttons { display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+    .export-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border: none; border-radius: var(--radius); font-size: 0.9rem; font-weight: 500; cursor: pointer; font-family: 'Roboto', sans-serif; box-shadow: var(--shadow); transition: background 0.2s; text-decoration: none; color: #fff; }
+    .export-btn--pdf { background: var(--primary); }
+    .export-btn--pdf:hover { background: var(--primary-hover); }
+    .export-btn--excel { background: #217346; }
+    .export-btn--excel:hover { background: #1a5c38; }
     @media print {
       .top-bar { border-bottom: 2px solid #000; }
       .card { break-inside: avoid; box-shadow: none; border: 1px solid #ccc; }
+      .export-buttons { display: none; }
     }
   </style>
 </head>
@@ -88,6 +95,17 @@
     </div>
   </div>
 
+  <div id="export-buttons" class="export-buttons" style="display:none">
+    <button class="export-btn export-btn--excel" onclick="exportExcel()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 20V4h7v5h5v11H6zm2.5-6.2L10.3 16l-1.8 2.2h1.5l1-1.4 1 1.4h1.5L11.7 16l1.8-2.2h-1.5l-1 1.3-1-1.3H8.5z"/></svg>
+      Pobierz Excel
+    </button>
+    <a id="pdf-link" class="export-btn export-btn--pdf" href="#" target="_blank">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+      Pobierz PDF
+    </a>
+  </div>
+
   <div id="content">
     <div class="loading">
       <div class="spinner"></div>
@@ -98,7 +116,9 @@
   <div class="footer">Enterprise Advisors &middot; Raport IPW</div>
 </div>
 
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
+  var _raportData = null;
   var APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzQ7SPfckgrOv78uUSIduyjg8tkIERGWf2A4KDu7KZkDPD8gYfKLPnTZOEMsaBMJrhvQ/exec';
 
   var urlParams = new URLSearchParams(window.location.search);
@@ -114,6 +134,7 @@
     window.handleRaportData = function(data) {
       window._raportLoaded = true;
       if (data && data.status === 'ok') {
+        _raportData = data;
         var parts = [];
         if (data.szkolenie) parts.push(data.szkolenie);
         if (data.trener) parts.push('Trener: ' + data.trener);
@@ -146,6 +167,10 @@
       content.innerHTML = '<div class="empty"><div class="empty-icon">\uD83D\uDCCB</div><p>Brak wype\u0142nionych plan\u00F3w dla tego szkolenia.</p><p style="margin-top:8px;font-size:0.82rem;">Uczestnicy jeszcze nie wys\u0142ali swoich IPW.</p></div>';
       return;
     }
+
+    // Pokaz przyciski eksportu
+    document.getElementById('export-buttons').style.display = 'flex';
+    document.getElementById('pdf-link').href = APPS_SCRIPT_URL + '?action=raport-pdf&token=' + encodeURIComponent(paramToken);
 
     // Stats
     var totalActions = 0;
@@ -193,6 +218,50 @@
     var d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
+  }
+
+  function exportExcel() {
+    if (!_raportData || !_raportData.entries) return;
+    var d = _raportData;
+
+    var rows = [];
+    rows.push(['RAPORT ZBIORCZY \u2014 INDYWIDUALNE PLANY WDRO\u017BENIA']);
+    rows.push(['Szkolenie:', d.szkolenie || '']);
+    rows.push(['Trener:', d.trener || '']);
+    rows.push(['Liczba uczestnik\u00F3w:', d.count]);
+    rows.push([]);
+
+    // Naglowki tabeli
+    rows.push(['Nr', 'Imi\u0119 i nazwisko', 'Firma', 'Data',
+      'Narz\u0119dzie 1', 'Opis wdro\u017Cenia 1', 'Termin 1', 'Wsparcie 1',
+      'Narz\u0119dzie 2', 'Opis wdro\u017Cenia 2', 'Termin 2', 'Wsparcie 2',
+      'Narz\u0119dzie 3', 'Opis wdro\u017Cenia 3', 'Termin 3', 'Wsparcie 3']);
+
+    for (var i = 0; i < d.entries.length; i++) {
+      var e = d.entries[i];
+      var row = [i + 1, e.name, e.company || '', e.data || ''];
+      for (var a = 0; a < 3; a++) {
+        var act = e.actions[a] || {};
+        row.push(act.tool || '', act.description || '', act.deadline || '', act.support || '');
+      }
+      rows.push(row);
+    }
+
+    var wb = XLSX.utils.book_new();
+    var ws = XLSX.utils.aoa_to_sheet(rows);
+
+    // Szerokosci kolumn
+    ws['!cols'] = [
+      {wch: 4}, {wch: 22}, {wch: 18}, {wch: 12},
+      {wch: 18}, {wch: 30}, {wch: 12}, {wch: 18},
+      {wch: 18}, {wch: 30}, {wch: 12}, {wch: 18},
+      {wch: 18}, {wch: 30}, {wch: 12}, {wch: 18}
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Raport IPW');
+
+    var filename = 'Raport_IPW_' + (d.szkolenie || 'raport').replace(/[^a-zA-Z0-9\u0080-\uFFFF]/g, '_').substring(0, 40) + '.xlsx';
+    XLSX.writeFile(wb, filename);
   }
 </script>
 
